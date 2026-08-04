@@ -35,6 +35,7 @@
       align-items: center;
       min-height: 100vh;
       padding: 15px;
+      padding-bottom: 60px; /* 預留底部固定橫幅的空間 */
     }
 
     .game-container {
@@ -238,6 +239,24 @@
       animation: float 2s infinite ease-in-out;
     }
 
+    /* 底部固定橫幅樣式 */
+    .footer-banner {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      width: 100%;
+      background: rgba(47, 62, 70, 0.9);
+      color: #ffffff;
+      text-align: center;
+      padding: 10px 0;
+      font-size: 0.95rem;
+      font-weight: 600;
+      letter-spacing: 1px;
+      box-shadow: 0 -4px 10px rgba(0, 0, 0, 0.1);
+      z-index: 1000;
+      backdrop-filter: blur(5px);
+    }
+
     /* 動畫 Keyframes */
     @keyframes float {
       0%, 100% { transform: translateY(0); }
@@ -314,6 +333,11 @@
 
   </div>
 
+  <!-- 底部固定橫幅 -->
+  <div class="footer-banner">
+    財政部中區國稅局雲林分局
+  </div>
+
   <script>
     const questions = [
       {
@@ -334,7 +358,8 @@
           { zh: "B. 代替民眾撰寫稅單並直接免除稅金", en: "Fill out tax forms and waive taxes directly.", correct: false },
           { zh: "C. 代表國稅局強制向民眾執行追繳欠稅", en: "Enforce tax collection against taxpayers.", correct: false }
         ],
-        explanation: "納保官的三大法定職權為：「溝通協調稅務爭議」、「受理申訴陳情」以及「提供行政救濟諮詢與協助」，是大家的權利守護者！"
+        explanation: "納保官的三大法定職權為：「溝通協調稅務爭議」、「受理申訴陳情」以及" +
+                   "「提供行政救濟諮詢與協助」，是大家的權利守護者！"
       },
       {
         zh: "父母在規劃財產贈與或遺產繼承時，法律對於兒子與女兒的權利有何規定？",
