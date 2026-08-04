@@ -1,0 +1,438 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>稅務平權大冒險 Tax & Gender Equality Quiz Game</title>
+  <!-- Canvas Confetti 慶祝粒子效果 -->
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600;700&display=swap');
+
+    :root {
+      --primary-color: #ff6b6b;
+      --secondary-color: #4ecdc4;
+      --accent-color: #ffe66d;
+      --bg-color: #f7fff7;
+      --card-bg: #ffffff;
+      --text-color: #2f3e46;
+      --correct-color: #2ecc71;
+      --wrong-color: #ff4757;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Fredoka', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "PingFang TC", "Microsoft JhengHei", sans-serif;
+    }
+
+    body {
+      background: linear-gradient(135deg, #a8e6cf 0%, #dcedc1 50%, #ffd3b6 100%);
+      color: var(--text-color);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      padding: 15px;
+    }
+
+    .game-container {
+      background-color: var(--card-bg);
+      width: 100%;
+      max-width: 600px;
+      border-radius: 28px;
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+      padding: 25px 20px;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+      border: 5px solid #ffffff;
+    }
+
+    .header h1 {
+      color: #ff6b6b;
+      font-size: 2rem;
+      font-weight: 700;
+      text-shadow: 2px 2px 0px #ffe66d;
+      margin-bottom: 5px;
+    }
+
+    .header p {
+      color: #70a1ff;
+      font-weight: 600;
+      font-size: 1rem;
+    }
+
+    /* 狀態列：可愛計分板 */
+    .status-bar {
+      display: flex;
+      justify-content: space-around;
+      align-items: center;
+      background: #ffeaa7;
+      padding: 10px 15px;
+      border-radius: 20px;
+      margin: 15px 0;
+      font-weight: bold;
+      color: #d63031;
+      font-size: 1.1rem;
+      border: 2px dashed #fdcb6e;
+    }
+
+    .card {
+      background: #f1f2f6;
+      border-radius: 20px;
+      padding: 20px;
+      margin-bottom: 15px;
+      text-align: left;
+      box-shadow: inset 0 2px 5px rgba(0,0,0,0.05);
+      animation: bounceIn 0.5s ease;
+    }
+
+    .question-zh {
+      font-size: 1.2rem;
+      font-weight: bold;
+      color: #2f3542;
+      margin-bottom: 8px;
+      line-height: 1.4;
+    }
+
+    .question-en {
+      font-size: 0.95rem;
+      color: #57606f;
+      font-style: italic;
+      line-height: 1.3;
+    }
+
+    .options-grid {
+      display: grid;
+      gap: 12px;
+      margin-bottom: 15px;
+    }
+
+    .btn-option {
+      background-color: #ffffff;
+      border: 3px solid #dfe4ea;
+      border-radius: 18px;
+      padding: 12px 15px;
+      text-align: left;
+      cursor: pointer;
+      transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      display: flex;
+      flex-direction: column;
+      position: relative;
+    }
+
+    .btn-option:active {
+      transform: scale(0.98);
+    }
+
+    .btn-option:hover {
+      border-color: #70a1ff;
+      background-color: #f1f2f6;
+      transform: translateY(-2px);
+    }
+
+    .btn-option .zh {
+      font-weight: bold;
+      font-size: 1rem;
+      color: #2f3542;
+    }
+
+    .btn-option .en {
+      font-size: 0.8rem;
+      color: #747d8c;
+    }
+
+    /* 答題回饋效果 */
+    .btn-option.correct {
+      background-color: #2ecc71 !important;
+      border-color: #27ae60 !important;
+      color: white !important;
+      animation: pulse 0.4s;
+    }
+
+    .btn-option.correct .zh, .btn-option.correct .en {
+      color: white !important;
+    }
+
+    .btn-option.wrong {
+      background-color: #ff4757 !important;
+      border-color: #ff6b81 !important;
+      animation: shake 0.4s;
+    }
+
+    .btn-option.wrong .zh, .btn-option.wrong .en {
+      color: white !important;
+    }
+
+    .explanation-box {
+      background-color: #eccc68;
+      color: #2f3542;
+      padding: 15px;
+      border-radius: 16px;
+      text-align: left;
+      margin-bottom: 15px;
+      display: none;
+      font-size: 0.95rem;
+      line-height: 1.4;
+      animation: fadeIn 0.3s ease-in;
+    }
+
+    .explanation-title {
+      font-weight: bold;
+      margin-bottom: 5px;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+
+    .btn-next {
+      background: linear-gradient(45deg, #ff6b6b, #ff8e53);
+      color: white;
+      border: none;
+      padding: 14px 28px;
+      font-size: 1.2rem;
+      font-weight: bold;
+      border-radius: 50px;
+      cursor: pointer;
+      width: 100%;
+      box-shadow: 0 5px 15px rgba(255, 107, 107, 0.4);
+      transition: all 0.2s;
+      display: none;
+    }
+
+    .btn-next:hover {
+      transform: scale(1.03);
+    }
+
+    .screen {
+      display: none;
+    }
+
+    .screen.active {
+      display: block;
+    }
+
+    .start-btn, .restart-btn {
+      background: linear-gradient(45deg, #1dd1a1, #10ac84);
+      color: white;
+      border: none;
+      padding: 16px 36px;
+      font-size: 1.3rem;
+      font-weight: bold;
+      border-radius: 50px;
+      cursor: pointer;
+      margin-top: 15px;
+      box-shadow: 0 6px 20px rgba(16, 172, 132, 0.4);
+      transition: transform 0.2s;
+    }
+
+    .start-btn:hover, .restart-btn:hover {
+      transform: scale(1.05);
+    }
+
+    .character-avatar {
+      font-size: 4.5rem;
+      margin: 10px 0;
+      animation: float 2s infinite ease-in-out;
+    }
+
+    /* 動畫 Keyframes */
+    @keyframes float {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-10px); }
+    }
+    @keyframes bounceIn {
+      0% { opacity: 0; transform: scale(0.9); }
+      100% { opacity: 1; transform: scale(1); }
+    }
+    @keyframes shake {
+      0%, 100% { transform: translateX(0); }
+      20%, 60% { transform: translateX(-8px); }
+      40%, 80% { transform: translateX(8px); }
+    }
+    @keyframes pulse {
+      0% { transform: scale(1); }
+      50% { transform: scale(1.03); }
+      100% { transform: scale(1); }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="game-container">
+    
+    <!-- 開始畫面 -->
+    <div id="start-screen" class="screen active">
+      <div class="header">
+        <h1>租稅平權小智王</h1>
+        <p>Tax & Gender Equality Fun Quiz</p>
+      </div>
+      <div class="character-avatar">🦁⚖️</div>
+      <p style="font-size: 1.1rem; color: #57606f; margin-bottom: 15px; font-weight: bold;">
+        答對 3 道挑戰題，成為稅務平權達人！<br>闖關成功即可獲得驚喜宣導品！
+      </p>
+      <button class="start-btn" onclick="startGame()">🚀 開始冒險 Start!</button>
+    </div>
+
+    <!-- 遊戲進行畫面 -->
+    <div id="quiz-screen" class="screen">
+      <div class="status-bar">
+        <span>🚩 第 <span id="current-index">1</span>/3 關</span>
+        <span>⭐ 得分: <span id="score">0</span></span>
+      </div>
+
+      <div class="card">
+        <div class="question-zh" id="q-zh">載入中...</div>
+        <div class="question-en" id="q-en">Loading...</div>
+      </div>
+
+      <div class="options-grid" id="options-container"></div>
+
+      <div class="explanation-box" id="explanation-box">
+        <div class="explanation-title">💡 達人小秘訣 (Key Point)</div>
+        <div id="explanation-text"></div>
+      </div>
+
+      <button class="btn-next" id="next-btn" onclick="nextQuestion()">下一關 Next Stage ➔</button>
+    </div>
+
+    <!-- 結算畫面 -->
+    <div id="end-screen" class="screen">
+      <div class="header">
+        <h1>🎉 冒險完成！</h1>
+        <p>Congratulations!</p>
+      </div>
+      <div id="final-badge" class="character-avatar">🏆</div>
+      <h2 style="color: #ff6b6b; margin-bottom: 10px; font-size: 1.8rem;">
+        獲得分數：<span id="final-score">0</span> 分
+      </h2>
+      <p id="reward-msg" style="font-size: 1.1rem; color: #2f3542; margin-bottom: 20px; font-weight: bold;"></p>
+      <button class="restart-btn" onclick="startGame()">🔄 再玩一次 Play Again</button>
+    </div>
+
+  </div>
+
+  <script>
+    const questions = [
+      {
+        zh: "林先生過世了。根據台灣法律，女兒與兒子對遺產的繼承權應該如何處理？",
+        en: "Mr. Lin passed away. Under Taiwan law, how should inheritance rights be handled between daughters and sons?",
+        options: [
+          { zh: "A. 男女享有平等的繼承權", en: "Daughters and sons have equal rights to inherit.", correct: true },
+          { zh: "B. 兒子有優先繼承權", en: "Sons have priority to inherit all assets.", correct: false },
+          { zh: "C. 女兒必須經兒子同意才能繼承", en: "Daughters can only inherit if sons agree.", correct: false }
+        ],
+        explanation: "民間傳統常有「傳子不傳女」的舊觀念，但在法律與遺產稅申報上，子女不分性別皆享有平等的繼承權利！"
+      },
+      {
+        zh: "民眾遇到稅務爭議需要溝通協調或申訴時，納稅者權利保護官（納保官）主要提供哪些服務？",
+        en: "When taxpayers face tax disputes, what primary services do Taxpayer Rights Protection Officers offer?",
+        options: [
+          { zh: "A. 協助溝通協調、受理陳情申訴、提供行政救濟諮詢", en: "Assist in communication, handle complaints, and consult on legal remedies.", correct: true },
+          { zh: "B. 代替民眾撰寫稅單並直接免除稅金", en: "Fill out tax forms and waive taxes directly.", correct: false },
+          { zh: "C. 代表國稅局強制向民眾執行追繳欠稅", en: "Enforce tax collection against taxpayers.", correct: false }
+        ],
+        explanation: "納保官的三大法定職權為：「溝通協調稅務爭議」、「受理申訴陳情」以及「提供行政救濟諮詢與協助」，是大家的權利守護者！"
+      },
+      {
+        zh: "父母在規劃財產贈與或遺產繼承時，法律對於兒子與女兒的權利有何規定？",
+        en: "When parents plan property gifts or inheritance, what does the law stipulate regarding the rights of sons and daughters?",
+        options: [
+          { zh: "A. 不論贈與或繼承，女兒與兒子皆享有平等的法律權利與扣除額", en: "For gifts and inheritance, daughters and sons enjoy equal legal rights and deduction allowances.", correct: true },
+          { zh: "B. 只有贈與給兒子免稅，贈與給女兒要課雙倍稅", en: "Only gifts to sons are tax-free, while gifts to daughters are taxed double.", correct: false },
+          { zh: "C. 法律規定財產只能贈與給長子", en: "The law stipulates property can only be gifted to the eldest son.", correct: false }
+        ],
+        explanation: "破除重男輕女的傳統觀念！在贈與稅與遺產稅法規中，子女不分性別均享有相同的權利與扣除額喔！"
+      }
+    ];
+
+    let currentQuestionIndex = 0;
+    let score = 0;
+    let answered = false;
+
+    function startGame() {
+      currentQuestionIndex = 0;
+      score = 0;
+      document.getElementById('start-screen').classList.remove('active');
+      document.getElementById('end-screen').classList.remove('active');
+      document.getElementById('quiz-screen').classList.add('active');
+      loadQuestion();
+    }
+
+    function loadQuestion() {
+      answered = false;
+      const q = questions[currentQuestionIndex];
+      document.getElementById('current-index').textContent = currentQuestionIndex + 1;
+      document.getElementById('score').textContent = score;
+      document.getElementById('q-zh').textContent = q.zh;
+      document.getElementById('q-en').textContent = q.en;
+      
+      const optionsContainer = document.getElementById('options-container');
+      optionsContainer.innerHTML = '';
+
+      q.options.forEach((opt, index) => {
+        const btn = document.createElement('button');
+        btn.className = 'btn-option';
+        btn.innerHTML = `<span class="zh">${opt.zh}</span><span class="en">${opt.en}</span>`;
+        btn.onclick = () => selectOption(index, btn);
+        optionsContainer.appendChild(btn);
+      });
+
+      document.getElementById('explanation-box').style.display = 'none';
+      document.getElementById('next-btn').style.display = 'none';
+    }
+
+    function selectOption(selectedIndex, selectedBtn) {
+      if (answered) return;
+      answered = true;
+
+      const q = questions[currentQuestionIndex];
+      const optionsButtons = document.querySelectorAll('.btn-option');
+
+      optionsButtons.forEach((btn, idx) => {
+        if (q.options[idx].correct) {
+          btn.classList.add('correct');
+        } else if (idx === selectedIndex) {
+          btn.classList.add('wrong');
+        }
+      });
+
+      if (q.options[selectedIndex].correct) {
+        score += 10;
+        document.getElementById('score').textContent = score;
+      }
+
+      document.getElementById('explanation-text').textContent = q.explanation;
+      document.getElementById('explanation-box').style.display = 'block';
+      document.getElementById('next-btn').style.display = 'block';
+    }
+
+    function nextQuestion() {
+      currentQuestionIndex++;
+      if (currentQuestionIndex < questions.length) {
+        loadQuestion();
+      } else {
+        showEndScreen();
+      }
+    }
+
+    function showEndScreen() {
+      document.getElementById('quiz-screen').classList.remove('active');
+      document.getElementById('end-screen').classList.add('active');
+      document.getElementById('final-score').textContent = score;
+
+      const rewardMsg = document.getElementById('reward-msg');
+      if (score === 30) {
+        rewardMsg.textContent = "太棒了！獲得最高榮譽，請截圖此畫面兌換精美宣導品！";
+        if (typeof confetti === 'function') {
+          confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 } });
+        }
+      } else {
+        rewardMsg.textContent = "挑戰成功！再接再厲可以拿到更好成績喔！";
+      }
+    }
+  </script>
+</body>
+</html>
